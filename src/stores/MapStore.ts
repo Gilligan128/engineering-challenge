@@ -8,6 +8,9 @@ import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import Graphic from '@arcgis/core/Graphic';
 import Polygon from '@arcgis/core/geometry/Polygon';
 import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
+import { List } from 'antd';
+import { withInfo } from 'antd/lib/modal/confirm';
+
 
 export default class MapStore {
   rootStore: RootStore;
@@ -16,17 +19,27 @@ export default class MapStore {
   sketchLayer!: __esri.GraphicsLayer;
   sketch!: __esri.Sketch;
   sketchState!: string;
+  hasIntersection: boolean = false;
+  intersectionArea: number = 0;
 
   constructor(rootStore: RootStore) {
     // HINT: you can add additional observable properties to this class
     // https://mobx.js.org/observable-state.html
-    makeObservable(this, { sketchState: observable, setSketchState: action });
+    makeObservable(this, { sketchState: observable, hasIntersection: observable, intersectionArea: observable, setSketchState: action, setHasIntersection: action, setIntersectionArea: action });
     this.rootStore = rootStore;
     this.setSketchState('idle');
   }
 
   setSketchState(state: string) {
     this.sketchState = state;
+  }
+
+  setHasIntersection(state: boolean) {
+    this.hasIntersection = state;
+  }
+
+  setIntersectionArea(state: number) {
+    this.intersectionArea = state;
   }
 
   constructMap(container: string) {
@@ -115,16 +128,28 @@ export default class MapStore {
 
     // HINT: the event has a graphic property which has a geometry property
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-Geometry.html
+    const sketchedGeometry = event.graphic.geometry
 
     // HINT: you can use getItemAt to access one of the graphics of the noFlyLayer.
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-core-Collection.html#getItemAt
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-Graphic.html
+    
+    //Instead of getting one geometry, since we have a list, I would rather push funcitonality into the list rather than assume the list will always only have one item
 
     // HINT: you can use the geometry engine to calculate the intersection of two geometries
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-geometryEngine.html#intersect
 
+    const intersections = this.noFlyLayer.graphics
+                              .map (graphic => geometryEngine.intersect(graphic.geometry, sketchedGeometry))
+                              .toArray()
+                              .flat()
+        
+
     // HINT: you can use the geometry engine to calculate area of a polygon
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-geometryEngine.html#geodesicArea
+    const intersectingPolygons = intersections.filter(geometry => geometry !== null).filter(geometry => geometry.type === 'polygon')as Array<Polygon>
+    const geoAreas = intersectingPolygons.map (polygon => geometryEngine.geodesicArea(polygon, 'square-kilometers'))
+    const totalArea = geoAreas.reduce((sum, current) => sum + current, 0);
 
     // HINT: you can create a graphic using a Graphic object
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-Graphic.html#symbol
@@ -134,11 +159,16 @@ export default class MapStore {
 
     // HINT: you can add a new Graphic to this.sketchLayer to display it on the map
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-GraphicsLayer.html#add
+
+    this.setHasIntersection(intersections.length > 0)
+    this.setIntersectionArea(totalArea)
   };
 
   cleanup() {
     // Todo, remove any listeners
     this.sketch.destroy();
     this.setSketchState('idle');
+    this.setHasIntersection(false)
+    this.setIntersectionArea(0)
   }
 }
