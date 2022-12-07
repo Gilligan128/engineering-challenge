@@ -10,7 +10,19 @@ import Polygon from '@arcgis/core/geometry/Polygon';
 import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
 import { List } from 'antd';
 import { withInfo } from 'antd/lib/modal/confirm';
+import { Geometry } from 'geojson';
 
+class IntersectionResult {
+  intersectionArea: number = 0;
+
+  constructor(intersectionArea: number) {
+    this.intersectionArea = intersectionArea;
+  }
+
+  hasIntersection() {
+    return this.intersectionArea > 0;
+  }
+}
 
 export default class MapStore {
   rootStore: RootStore;
@@ -130,27 +142,10 @@ export default class MapStore {
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-Geometry.html
     const sketchedGeometry = event.graphic.geometry
 
-    // HINT: you can use getItemAt to access one of the graphics of the noFlyLayer.
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-core-Collection.html#getItemAt
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-Graphic.html
-    
     //Instead of getting one geometry, since we have a list, I would rather push funcitonality into the list rather than assume the list will always only have one item
-
-    // HINT: you can use the geometry engine to calculate the intersection of two geometries
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-geometryEngine.html#intersect
-
-    const intersections = this.noFlyLayer.graphics
-                              .map (graphic => geometryEngine.intersect(graphic.geometry, sketchedGeometry))
-                              .toArray()
-                              .flat()
-        
-
-    // HINT: you can use the geometry engine to calculate area of a polygon
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-geometryEngine.html#geodesicArea
-    const intersectingPolygons = intersections.filter(geometry => geometry !== null).filter(geometry => geometry.type === 'polygon')as Array<Polygon>
-    const geoAreas = intersectingPolygons.map (polygon => geometryEngine.geodesicArea(polygon, 'square-kilometers'))
-    const totalArea = geoAreas.reduce((sum, current) => sum + current, 0);
-
+    const noFlyGeometries = this.noFlyLayer.graphics
+                                .map(graphic => graphic.geometry)
+    const intersectionResult = this.calculateInterections(sketchedGeometry, noFlyGeometries)
     // HINT: you can create a graphic using a Graphic object
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-Graphic.html#symbol
 
@@ -160,8 +155,8 @@ export default class MapStore {
     // HINT: you can add a new Graphic to this.sketchLayer to display it on the map
     // https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-GraphicsLayer.html#add
 
-    this.setHasIntersection(intersections.length > 0)
-    this.setIntersectionArea(totalArea)
+    this.setHasIntersection(intersectionResult.hasIntersection())
+    this.setIntersectionArea(intersectionResult.intersectionArea)
   };
 
   cleanup() {
@@ -170,5 +165,18 @@ export default class MapStore {
     this.setSketchState('idle');
     this.setHasIntersection(false)
     this.setIntersectionArea(0)
+  }
+
+  private calculateInterections(sketchedGeometry: __esri.Geometry, noFlyGeometries : __esri.Collection<__esri.Geometry> ) {
+      //Instead of getting one geometry, since we have a list, I would rather push funcitonality into the list rather than assume the list will always only have one item
+    const intersections = noFlyGeometries
+      .map (geometry => geometryEngine.intersect(geometry, sketchedGeometry))
+      .toArray()
+      .flat()
+    const intersectingPolygons = intersections.filter(geometry => geometry !== null).filter(geometry => geometry.type === 'polygon')as Array<Polygon>
+    const geoAreas = intersectingPolygons.map (polygon => geometryEngine.geodesicArea(polygon, 'square-kilometers'))
+    const totalArea = geoAreas.reduce((sum, current) => sum + current, 0);
+    const intersectionResult = new IntersectionResult(totalArea)
+    return intersectionResult;
   }
 }
