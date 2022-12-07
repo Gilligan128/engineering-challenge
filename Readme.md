@@ -83,3 +83,8 @@ See documentation on writing tests at [Testing Library](https://testing-library.
 - [Babel](https://babeljs.io/): JavaScript "transpiler"
 - [Jest](https://jestjs.io/): Jest is a delightful JavaScript Testing Framework with a focus on simplicity
 - [Testing Library](https://testing-library.com/docs/): Simple and complete testing utilities that encourage good testing practices
+
+
+## Candidate Comments
+- so the Hints indicate we shoul use getItemAt. Instead, because the noFlyLayer geometries are "lifted" into a list of geometries for the layer, my logic does not assume there is only one item in the noFlyLayer. 
+- choosing "meters" as areaUnit for area as it is more internationally recognized.
