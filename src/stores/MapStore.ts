@@ -14,9 +14,10 @@ import { Geometry } from 'geojson';
 
 class IntersectionResult {
   intersectionArea: number = 0;
-
-  constructor(intersectionArea: number) {
+  intersections: Array<__esri.Geometry>;
+  constructor(intersections: Array<__esri.Geometry>, intersectionArea: number) {
     this.intersectionArea = intersectionArea;
+    this.intersections = intersections;
   }
 
   hasIntersection() {
@@ -126,6 +127,7 @@ export default class MapStore {
       view.ui.add(this.sketch, 'top-right');
 
       this.sketch.on('create', this.sketchCreate);
+      this.sketch.on('update', this.sketchUpdate);
     });
   }
 
@@ -146,14 +148,46 @@ export default class MapStore {
     const noFlyGeometries = this.noFlyLayer.graphics
                                 .map(graphic => graphic.geometry)
     const intersectionResult = this.calculateInterections(sketchedGeometry, noFlyGeometries)
-    // HINT: you can create a graphic using a Graphic object
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-Graphic.html#symbol
 
+    const intersectionGraphics = intersectionResult.intersections.map (intersection => new Graphic({
+                                    geometry: intersection,
+                                    symbol: {
+                                      color: "blue"
+                                    }
+                                  }));
+    
+    this.sketchLayer.removeAll();     
+    this.sketchLayer.add(event.graphic);
+    this.sketchLayer.addMany(intersectionGraphics);                        
     // HINT: you can provide a symbol when creating this graphic to change its appearance
     // https://developers.arcgis.com/javascript/latest/sample-code/playground/live/index.html#/config=symbols/2d/SimpleFillSymbol.json
 
-    // HINT: you can add a new Graphic to this.sketchLayer to display it on the map
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-layers-GraphicsLayer.html#add
+    this.setHasIntersection(intersectionResult.hasIntersection())
+    this.setIntersectionArea(intersectionResult.intersectionArea)
+  };
+
+  sketchUpdate = async (event: __esri.SketchUpdateEvent) => {
+    this.setSketchState(event.state);
+    if (event.state !== 'complete') return;
+
+    const sketchedGeometry = event.graphics[0].geometry; //should handle all updated geometries.
+
+    const noFlyGeometries = this.noFlyLayer.graphics
+                                .map(graphic => graphic.geometry)
+    const intersectionResult = this.calculateInterections(sketchedGeometry, noFlyGeometries)
+
+    const intersectionGraphics = intersectionResult.intersections.map (intersection => new Graphic({
+                                    geometry: intersection,
+                                    symbol: {
+                                      color: "blue"
+                                    }
+                                  }));
+    
+    this.sketchLayer.removeAll();     
+    this.sketchLayer.add(event.graphics[0]);
+    this.sketchLayer.addMany(intersectionGraphics);                        
+    // HINT: you can provide a symbol when creating this graphic to change its appearance
+    // https://developers.arcgis.com/javascript/latest/sample-code/playground/live/index.html#/config=symbols/2d/SimpleFillSymbol.json
 
     this.setHasIntersection(intersectionResult.hasIntersection())
     this.setIntersectionArea(intersectionResult.intersectionArea)
@@ -176,7 +210,7 @@ export default class MapStore {
     const intersectingPolygons = intersections.filter(geometry => geometry !== null).filter(geometry => geometry.type === 'polygon')as Array<Polygon>
     const geoAreas = intersectingPolygons.map (polygon => geometryEngine.geodesicArea(polygon, 'square-kilometers'))
     const totalArea = geoAreas.reduce((sum, current) => sum + current, 0);
-    const intersectionResult = new IntersectionResult(totalArea)
+    const intersectionResult = new IntersectionResult(intersections, totalArea)
     return intersectionResult;
   }
 }

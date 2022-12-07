@@ -20,8 +20,7 @@ const App = () => {
   const { mapStore } = useStore();
   return (
     <>
-      {/* HINT: you can bind to properties in the map store like this: */}
-      <Info>{`Sketch State: ${mapStore.sketchState}; Intersection? ${mapStore.hasIntersection}; Intereseting Area: ${mapStore.intersectionArea} Km`}</Info>
+      <Info>{`Sketch State: ${mapStore.sketchState}; Intersection? ${mapStore.hasIntersection}; Intersecting Area: ${mapStore.intersectionArea} Km`}</Info>
       <Map />
     </>
   );
