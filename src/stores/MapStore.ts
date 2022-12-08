@@ -134,14 +134,7 @@ export default class MapStore {
   sketchCreate = async (event: __esri.SketchCreateEvent) => {
     this.setSketchState(event.state);
     if (event.state !== 'complete') return;
-
-    // THERE ARE 3 STEPS TO SATISFYING THE BASE REQUIREMENTS FOR THE CHALLENGE
-    // STEP 1: determine if the sketch's graphic intersects with the graphic in the noFlyLayer
-    // STEP 2: if it intersects, compute the area of the intersection, and display it
-    // STEP 3: create a new graphic with any possible intersection, and display it on the map
-
-    // HINT: the event has a graphic property which has a geometry property
-    // https://developers.arcgis.com/javascript/latest/api-reference/esri-geometry-Geometry.html
+    
     const sketchedGeometry = event.graphic.geometry
 
     //Instead of getting one geometry, since we have a list, I would rather push funcitonality into the list rather than assume the list will always only have one item
