@@ -19,7 +19,7 @@ const App = () => {
   const { mapStore } = useStore();
   return (
     <>
-      <Info>{`Sketch State: ${mapStore.sketchState}; Flight Denied? ${mapStore.hasIntersection}; Intersecting Area: ${mapStore.intersectionArea} Sq Km`}</Info>
+      <Info>{`Sketch State: ${mapStore.sketchState}; Flight Allowed? ${ mapStore.hasIntersection === true ? 'No' : 'Yes'}; Intersecting Area: ${mapStore.intersectionArea.toFixed(2)} Sq Km`}</Info>
       <Map />
     </>
   );
