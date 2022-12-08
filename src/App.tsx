@@ -12,16 +12,22 @@ const Info = styled.p`
   background-color: black;
   color: white;
   padding: 10px;
-  @media (max-width: 500px; max-height: 100px) {}
-  opacity: .6;
+  @media (max-width: 500px) {}
+  opacity: .8;
+  border-radius: 1em;
 `;
 
 const App = () => {
   const { mapStore } = useStore();
   return (
     <>
-      <Info>{`Sketch State: ${mapStore.sketchState}; Flight Allowed? ${ mapStore.hasIntersection === true ? 'No' : 'Yes'}; Intersecting Area: ${mapStore.intersectionArea.toFixed(2)} Sq Km`}</Info>
-      <Map />
+      <Info>
+        <div>Sketch State: {mapStore.sketchState}</div>
+        <div>Flight Allowed? {mapStore.hasIntersection === true ? 'No' : 'Yes'}</div>
+        <div>Intersecting Area: {mapStore.intersectionArea.toFixed(2)} Sq Km</div>
+      </Info>
+     
+     <Map />
     </>
   );
 };
