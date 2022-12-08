@@ -12,8 +12,7 @@ const Info = styled.p`
   background-color: black;
   color: white;
   padding: 10px;
-  height: 100px;
-  width: 500px;
+  @media (max-width: 500px; max-height: 100px) {}
 `;
 
 const App = () => {

@@ -86,5 +86,4 @@ See documentation on writing tests at [Testing Library](https://testing-library.
 
 
 ## Candidate Comments
-- sothe Hints indicate we should use getItemAt. Instead, because the noFlyLayer geometries are "lifted" into a list of geometries for the layer, my logic does not assume there is only one item in the noFlyLayer. 
-- I am choosing "kilometers" as AreaUnit for intersection area as it is more internationally recognized.
+- The Hints indicate we should use getItemAt. Instead, because the noFlyLayer geometries are "lifted" into a list of geometries for the layer, my logic does not assume there is only one item in the noFlyLayer. 
