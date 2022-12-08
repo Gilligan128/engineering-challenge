@@ -38,7 +38,8 @@ export default class MapStore {
   constructor(rootStore: RootStore) {
     // HINT: you can add additional observable properties to this class
     // https://mobx.js.org/observable-state.html
-    makeObservable(this, { sketchState: observable, hasIntersection: observable, intersectionArea: observable, setSketchState: action, setHasIntersection: action, setIntersectionArea: action });
+    makeObservable(this, { sketchState: observable, hasIntersection: observable, intersectionArea: observable,
+       setSketchState: action, setHasIntersection: action, setIntersectionArea: action });
     this.rootStore = rootStore;
     this.setSketchState('idle');
   }
@@ -99,6 +100,7 @@ export default class MapStore {
     this.map = new ArcGISMap({
       basemap: 'streets-vector',
       layers: [this.noFlyLayer, this.sketchLayer],
+
     });
 
     // Set the map view, including location and zoom level
@@ -108,6 +110,7 @@ export default class MapStore {
       container,
       center: [-83.35447311401367, 42.23982914405], // Longitude, latitude
       zoom: 11,
+      
     });
 
     // When the view finishes loading, add the sketch widget
@@ -132,39 +135,23 @@ export default class MapStore {
   }
 
   sketchCreate = async (event: __esri.SketchCreateEvent) => {
-    this.setSketchState(event.state);
-    if (event.state !== 'complete') return;
-    
-    const sketchedGeometry = event.graphic.geometry
-
-    //Instead of getting one geometry, since we have a list, I would rather push funcitonality into the list rather than assume the list will always only have one item
-    const noFlyGeometries = this.noFlyLayer.graphics
-                                .map(graphic => graphic.geometry)
-    const intersectionResult = this.calculateInterections(sketchedGeometry, noFlyGeometries)
-
-    const intersectionGraphics = intersectionResult.intersections.map (intersection => new Graphic({
-                                    geometry: intersection,
-                                    symbol: {
-                                      color: "blue"
-                                    }
-                                  }));
-    
-    this.sketchLayer.removeAll();     
-    this.sketchLayer.add(event.graphic);
-    this.sketchLayer.addMany(intersectionGraphics);                        
-    // HINT: you can provide a symbol when creating this graphic to change its appearance
-    // https://developers.arcgis.com/javascript/latest/sample-code/playground/live/index.html#/config=symbols/2d/SimpleFillSymbol.json
-
-    this.setHasIntersection(intersectionResult.hasIntersection())
-    this.setIntersectionArea(intersectionResult.intersectionArea)
+    const graphic = event.graphic;
+    this.changeSketch(event.state, graphic);
   };
 
   sketchUpdate = async (event: __esri.SketchUpdateEvent) => {
     this.setSketchState(event.state);
-    if (event.state !== 'complete') return;
+    this.changeSketch(event.state, event.graphics[0])
+  };
 
-    const sketchedGeometry = event.graphics[0].geometry; //should handle all updated geometries.
+  private async changeSketch(sketchState: string, sketchGraphic: Graphic) {
+    this.setSketchState(sketchState);
+    if (sketchState !== 'complete') return;
+  
+    const sketchedGeometry = sketchGraphic.geometry
 
+    //Instead of getting one geometry, since we have a list, I would rather push functionality into the list rather than assume the list will
+    // always only have one item.
     const noFlyGeometries = this.noFlyLayer.graphics
                                 .map(graphic => graphic.geometry)
     const intersectionResult = this.calculateInterections(sketchedGeometry, noFlyGeometries)
@@ -177,14 +164,12 @@ export default class MapStore {
                                   }));
     
     this.sketchLayer.removeAll();     
-    this.sketchLayer.add(event.graphics[0]);
-    this.sketchLayer.addMany(intersectionGraphics);                        
-    // HINT: you can provide a symbol when creating this graphic to change its appearance
-    // https://developers.arcgis.com/javascript/latest/sample-code/playground/live/index.html#/config=symbols/2d/SimpleFillSymbol.json
+    this.sketchLayer.add(sketchGraphic);
+    this.sketchLayer.addMany(intersectionGraphics);                       
 
     this.setHasIntersection(intersectionResult.hasIntersection())
     this.setIntersectionArea(intersectionResult.intersectionArea)
-  };
+  }
 
   cleanup() {
     // Todo, remove any listeners

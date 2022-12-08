@@ -88,3 +88,6 @@ See documentation on writing tests at [Testing Library](https://testing-library.
 ## Candidate Comments
 - The Hints indicate we should use getItemAt. Instead, because the noFlyLayer geometries are "lifted" into a list of geometries for the layer, my logic does not assume there is only one item in the noFlyLayer. 
 - Changed the info component to not have a height, so it form fits the text, and have a max-width so it does not overlap with other components. I also rounded it and made it less opaque.
+
+### Ideas if I had more time
+- the "intersection sketches" should not be selectable or movable. I would probably move these to a separate layer with less user-control. 
