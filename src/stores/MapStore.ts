@@ -13,7 +13,7 @@ import { withInfo } from 'antd/lib/modal/confirm';
 import { Geometry } from 'geojson';
 
 class IntersectionResult {
-  intersectionArea: number = 0;
+  intersectionArea = 0;
   intersections: Array<__esri.Geometry>;
   constructor(intersections: Array<__esri.Geometry>, intersectionArea: number) {
     this.intersectionArea = intersectionArea;
@@ -32,8 +32,8 @@ export default class MapStore {
   sketchLayer!: __esri.GraphicsLayer;
   sketch!: __esri.Sketch;
   sketchState!: string;
-  hasIntersection: boolean = false;
-  intersectionArea: number = 0;
+  hasIntersection = false;
+  intersectionArea = 0;
 
   constructor(rootStore: RootStore) {
     // HINT: you can add additional observable properties to this class

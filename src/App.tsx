@@ -13,6 +13,7 @@ const Info = styled.p`
   color: white;
   padding: 10px;
   @media (max-width: 500px; max-height: 100px) {}
+  opacity: .6;
 `;
 
 const App = () => {
