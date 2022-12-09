@@ -87,7 +87,19 @@ See documentation on writing tests at [Testing Library](https://testing-library.
 
 ## Candidate Comments
 - The Hints indicate we should use getItemAt. Instead, because the noFlyLayer geometries are "lifted" into a list of geometries for the layer, my logic does not assume there is only one item in the noFlyLayer. 
-- Changed the info component to not have a height, so it form fits the text, and have a max-width so it does not overlap with other components. I also rounded it and made it less opaque.
+
+
+### Features Implemented
+For frontend challenge only, for the backend challenge, see its Readme.
+
+- Intersection and geodesic area logic.
+    - works for both creating a new sketch and updating an existing sketch.
+    - Info shows whether a flight is allowed and the area in sq Km rounded to two decimal places.
+    - Intersecting graphic has a different color from the no-fly graphics and sketched graphic.
+- Improved Info UI, by rounding its corners and making it less opaque.
+- Made info box's width responsive. 
 
 ### Ideas if I had more time
 - the "intersection sketches" should not be selectable or movable. I would probably move these to a separate layer with less user-control. 
+- support for showing intersections for multiple sketches. Atm, when creating or updating a sketch it only shows the "last updated/created" sketch.  e.g. having an "info box" per sketch. Maybe even treating the sketches as a feature collection with the intersection info being feature data. 
+- refactor some of the mapstore actions out of the mapstore file. This would be similar to how Redux's reducers operate: pure functions that return new state that the Store can apply, based on the idea of [separating decisions from effects](https://blog.ploeh.dk/2016/09/26/decoupling-decisions-from-effects/) e.g. "changeSketch" function would return a `WaitForCompletion | MapState` type for the `MapStore` to apply. 
